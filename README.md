@@ -4,8 +4,8 @@ Powered by Python Lex-Yacc (PLY) on the backend and Streamlit on the frontend.
 
 What it does
 Multi-language tokenisation** – Handles Python, C/C++, and Java snippets.
-Detailed token output** – Shows keywords, identifiers, literals, operators, braces, etc.
-Instant feedback** – Paste code in the browser, hit *Analyse*, and watch the tokens appear.
+Detailed token output – Shows keywords, identifiers, literals, operators, braces, etc.
+Instant feedback – Paste code in the browser, hit Analyse, and watch the tokens appear.
 
 Repo layout
 | File | Purpose |
