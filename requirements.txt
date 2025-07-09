@@ -1,5 +1,4 @@
 pandas==2.0.2
 ply==3.11
-- streamlit==1.23.1
-+ streamlit==1.24.1
+streamlit==1.24.1
 pillow==10.0.1
