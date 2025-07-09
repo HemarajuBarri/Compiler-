@@ -1,9 +1,15 @@
+# lexer_webapp.py
 import streamlit as st
 import pandas as pd
 import ply.lex as lex
 import base64
 import sys
 
+# ----------------------------
+# Lexer setup
+# ----------------------------
+
+# List of token names
 TOKENS = [
     'T_PY_DEF', 'T_PY_CLASS', 'T_PY_KEYWORD',
     'T_CPP', 'T_CPP_INCLUDE', 'T_CPP_PRINT',
@@ -14,6 +20,7 @@ TOKENS = [
     'T_ACCESS', 'T_CLASS'
 ]
 
+# Regex rules for tokens
 t_T_PY_DEF      = r'\bdef\s+[A-Za-z_]\w*\s*\([^)]*\)\s*:'
 t_T_PY_CLASS    = r'\bclass\s+[A-Za-z_]\w*\s*:'
 t_T_PY_KEYWORD  = r'\b(self|pass|try|except)\b'
@@ -40,13 +47,19 @@ t_T_WHILE       = r'\bwhile\s*\([^)]*\)\s*\{'
 t_T_ACCESS      = r'\b(public|private|protected)\b'
 t_T_CLASS       = r'\bclass\s+\w+\s*\{'
 
+# Ignore spaces and tabs
 t_ignore = ' \t\r\n'
 
 def t_error(t):
     t.lexer.skip(1)
 
+# Force a __file__ attribute so PLY can locate this module
 sys.modules[__name__].__file__ = 'lexer_webapp.py'
 lexer = lex.lex(module=sys.modules[__name__], debug=False)
+
+# ----------------------------
+# Tokenization & Detection
+# ----------------------------
 
 def analyze_code(source: str):
     lexer.input(source)
@@ -69,6 +82,10 @@ def language_from(tokens):
         results.append('Java')
     return results or ['Unknown']
 
+# ----------------------------
+# Streamlit UI
+# ----------------------------
+
 def make_download_link(df):
     csv = df.to_csv(index=False)
     b64 = base64.b64encode(csv.encode()).decode()
@@ -76,13 +93,15 @@ def make_download_link(df):
 
 def main():
     st.set_page_config(page_title="Lexer Demo", layout="wide")
-    st.header("Programming Language Lexer")
+    st.header("📜 Programming Language Lexer")
     code = st.text_area("Paste your code here:", height=300)
+
     if st.button("Tokenize"):
         tokens = analyze_code(code)
         df = pd.DataFrame(tokens, columns=["Token Type", "Lexeme"])
         st.dataframe(df, width=700, height=300)
         st.markdown(make_download_link(df), unsafe_allow_html=True)
+
         langs = language_from(tokens)
         if 'Unknown' in langs:
             st.warning("Could not determine language.")
