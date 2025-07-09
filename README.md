@@ -16,7 +16,7 @@ Repo layout
 | `runtime.txt` | Pins Python 3.11 for smooth install on Streamlit Cloud |
 
 All token definitions live in la.py.
-Add new t_MYTOKEN regex functions or tweak existing ones to support more languages or constructs. Changes hot-reload when you restart the Streamlit app.
+Add new regex functions or tweak existing ones to support more languages or constructs. Changes hot-reload when you restart the Streamlit app.
 
 The app is already hosted on Streamlit Community Cloud:
 https://compilerdesign.streamlit.app
