@@ -54,7 +54,7 @@ def detect_language(tokens):
 def main():
     st.set_page_config(page_title="Programming Language Lexer",
                        page_icon="💻", layout="centered")
-    st.title("Programming Language Lexer")
+    st.title("Programming Language Lexer by Hema Raju")
 
     source_code = st.text_area(
         "Enter code below:",
