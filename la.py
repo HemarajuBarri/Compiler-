@@ -1,61 +1,154 @@
 import ply.lex as lex
-import sys
-SYMBOLS=(
- 'P_DEF','P_CLASS','P_KEY',
- 'C_KEY','C_INC','C_OUT',
- 'J_KEY',
- 'F_DEF','F_DCL','F_CALL',
- 'V_DCL','OP_ASG','K_RET','ID_NUM',
- 'KW_IF','KW_FOR','KW_WH',
- 'ACC','CLS',
+tokens = (
+    'IMPORT',
+    'CPP_PRINT',
+    'JAVA_PRINT',               
+    'VAR_DECL',
+    'FUNCTION_DECL',
+    'CLASS_DEF',
+    'BRANCH',
+    'SEMICOLON',
+    'RETURN',
+    'CALCULATION_OR_IDENTIFIER',
+    'PYTHON_DEF',
+    'DECORATOR',
+    'COMMENT',
+    'COMMA',
+    'NUMBER',
+    'ASSIGN',
+    'CPP_INCLUDE',
+    'WHILE_LOOP',
+    'FUNCTION_DEF',
+    'ACCESS_SPECIFIERS',
+    'CPP',
+    'PYTHON',
+    'JAVA',
+    'FOR_LOOP',
+    'CLASS',
+    'PYTHON_CLASS',
+    'FUNCTION_CALL',
+    'STRING_LITERAL',
 )
 
-P_DEF = r'\bdef\s+[_A-Za-z]\w*\s*\([^)]*\)\s*:'
-P_CLASS = r'\bclass\s+[_A-Za-z]\w*\s*:'
-P_KEY = r'\b(self|pass|try|except)\b'
-C_KEY = r'\b(namespace|using|std|virtual|cin|cout|>>|<<)\b'
-C_INC = r'\#include\s*<[^>]+>'
-C_OUT = r'\bcout\s*(<<\s*(?:\".*?\"|\w+)*)+;?'
-J_KEY = r'\b(static|abstract|package|@Override|super|this\.\w+)\b'
-F_DEF = r'\b(?:int|float|char|void)\s+\w+\s*\([^)]*\)\s*\{'
-F_DCL = r'\b(?:int|float|char|void)\s+\w+\s*\([^)]*\)\s*;'
-F_CALL = r'\b\w+\s*\([^)]*\)\s*;?'
-V_DCL = r'\b(?:int|float|char)\s+\w+(?:\s*=\s*[^;]+)?;?'
-OP_ASG = r'\w+\s*='
-K_RET = r'\breturn\b'
-ID_NUM = r'\b[A-Za-z_]\w*\b|\b\d+\b'
-KW_IF = r'\bif\b|\belse\b'
-KW_FOR = r'\bfor\s*\([^)]*\)\s*\{'
-KW_WH = r'\bwhile\s*\([^)]*\)\s*\{'
-ACC = r'\b(public|private|protected)\b'
-CLS = r'\bclass\s+\w+\s*\{'
+def t_IMPORT(t):
+    r'import\s+[a-zA-Z_][\w\.]*'
+    return t
 
-tokens=SYMBOLS
-t_ignore=' \t\n'
+def t_COMMENT(t):
+    r'//.*|\#.*'
+    return t
 
-def t_error(t):t.lexer.skip(1)
-sys.modules[__name__].__file__='lexer_tool_obf.py'
-lex.lex(module=sys.modules[__name__])
+def t_COMMA(t):
+    r','
+    return t
 
-def analyze(txt):
-    lex_obj=lex.lex(module=sys.modules[__name__])
-    lex_obj.input(txt)
-    out=[]
+def t_SEMICOLON(t):
+    r';'
+    return t
+
+def t_STRING_LITERAL(t):
+    r'"([^\\\n]|(\\.)*?)"'
+    return t
+
+def t_NUMBER(t):
+    r'\b\d+\b'
+    return t
+
+def t_ASSIGN(t):
+    r'[a-zA-Z_]\w*\s*='
+    t.value = t.value.rstrip('\n')
+    return t
+
+def t_CPP_INCLUDE(t):
+    r'\#include\s*<.*?>'
+    return t
+
+def t_CPP_PRINT(t):
+    r'\bcout\s*(<<\s*(?:[a-zA-Z_]\w*|"([^"]*)"))*\s*(<<endl)*;?'
+    return t
+
+def t_JAVA_PRINT(t):
+    r'\bSystem\.out\.print(?:ln)?\s*\(\s*(?:.+?)?\s*\);?'
+    return t
+
+def t_PYTHON_DEF(t):
+    r'\bdef\b\s+[a-zA-Z_]\w*\s*\(\s*\)\s*:\s*'
+    return t
+
+def t_FUNCTION_DEF(t):
+    r'\b(?:int|float|char|void)\s+[a-zA-Z_]\w*\s*\(\s*(?:[a-zA-Z_]\w*\s+[a-zA-Z_]\w*\s*)*\)\s*{'
+    return t
+
+def t_PYTHON_CLASS(t):
+    r'class\s+[a-zA-Z_]\w*\s*:'
+    return t
+
+def t_CLASS(t):
+    r'\bclass\b\s+[a-zA-Z_]\w*\s*(\([^)]*\))?\s*{'
+    return t
+
+def t_FOR_LOOP(t):
+    r'\bfor\s*\(\s*.*?\s*\)\s*{'
+    return t
+
+def t_WHILE_LOOP(t):
+    r'\bwhile\s*\(\s*.*?\s*\)\s*{'
+    return t
+
+def t_BRANCH(t):
+    r'\b(if|else\sif)\b\(\s*(.*?)\s*\){? |else'
+    return t
+
+def t_FUNCTION_CALL(t):
+    r'\b(?:[a-zA-Z_]\w*\.)*[a-zA-Z_]\w*\(\s*(?:.+?)?\s*\);?'
+    return t
+
+def t_FUNCTION_DECL(t):
+    r'\b(int|float|char|void)\s+[a-zA-Z_]\w*\(\s*(?:.+?)?\s*\);?'
+    return t
+
+def t_VAR_DECL(t):
+    r'\b(?:int|float|char)\s+[a-zA-Z_]\w*\s*(?:=\s*\S+)?\s*;?'
+    return t
+
+def t_RETURN(t):
+    r'\breturn\b\s+([a-zA-Z_]|\d+)\w*(\s*[\+\-%\*/]\s*([a-zA-Z_]|\d+)\w*)*\s*;?'
+    return t
+
+def t_CALCULATION_OR_IDENTIFIER(t):
+    r'([a-zA-Z_]|\d+)\w*(\s*[\+\-%\*/]\s*([a-zA-Z_]|\d+)\w*)*\s*;?'
+    return t
+
+def t_PYTHON(t):
+    r'\b(self|pass|except|try)\b'
+    return t
+
+def t_CPP(t):
+    r'\b(this->[a-zA-Z_]\w*|virtual|cin|using|namespace|std|<<|>>)\b[a-zA-Z_]?;?'
+    return t
+
+def t_JAVA(t):
+    r'\b(finally|super|this\.[a-zA-Z_]\w*|@Override|static|abstract|package)\b;?'
+    return t
+
+def t_ACCESS_SPECIFIERS(t):
+    r'\b(public|private|protected)\b'
+    return t
+
+t_ignore = ' \t\n}'
+
+def t_error(t):
+    print(f"Invalid character: {t.value[0]}")
+    t.lexer.skip(1)
+lexer = lex.lex()
+
+def test_lexer(data):
+    lexer.input(data)
+    result = []
     while True:
-        tk=lex_obj.token()
-        if not tk:break
-        out.append((tk.type,tk.value))
-    return out
-
-def detect(lst):
-    s={x for x,_ in lst}
-    res=[]
-    if 'C_INC' in s:res.append('C++')
-    if 'P_DEF' in s:res.append('Python')
-    if 'J_KEY' in s:res.append('Java')
-    return res or ['Unknown']
-
-if __name__=='__main__':
-    src='''def fn():\n x=1\n return x'''
-    tk=analyze(src)
-    print(tk,detect(tk))
+        tok = lexer.token()
+        if not tok:
+            break
+        print(tok)
+        result.append(tok)
+    return result
