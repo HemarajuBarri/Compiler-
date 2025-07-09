@@ -3,85 +3,85 @@ import pandas as pd
 import base64
 from la import lexer
 
-def tokenize(code: str):
-    """Feed code into the lexer and collect all tokens."""
-    lexer.input(code)
+def run_lexer_on(code_str: str):
+    """Tokenize the input string and return a list of tokens."""
+    lexer.input(code_str)
     toks = []
     while True:
-        tok = lexer.token()
-        if not tok:
+        token = lexer.token()
+        if not token:
             break
-        toks.append(tok)
+        toks.append(token)
     return toks
 
-def make_csv_download(df: pd.DataFrame, filename: str = "lexer_output.csv") -> str:
-    """Return a Markdown link to download the DataFrame as CSV."""
-    csv_str = df.to_csv(index=False)
-    b64 = base64.b64encode(csv_str.encode()).decode()
+def make_download_link(df: pd.DataFrame, fname: str = "lexer_output.csv") -> str:
+    """Generate a Markdown link to download a DataFrame as CSV."""
+    csv_txt = df.to_csv(index=False)
+    b64 = base64.b64encode(csv_txt.encode()).decode()
     return (
         f'<a href="data:file/csv;base64,{b64}" '
-        f'download="{filename}">Download CSV</a>'
+        f'download="{fname}">Download CSV file</a>'
     )
 
-def detect_languages(tokens):
-    """Given a list of tokens, return a list of possible languages."""
-    common = {
+def detect_language(tokens):
+    """Use the same detection logic as before, but refactored."""
+    base_tokens = {
         'FUNCTION_DEF', 'FUNCTION_CALL', 'VAR_DECL', 'ASSIGN',
-        'RETURN', 'CALCULATION_OR_IDENTIFIER',
-        'BRANCH', 'FOR_LOOP', 'WHILE_LOOP',
-        'ACCESS_SPECIFIERS', 'FUNCTION_DECL', 'CLASS'
+        'RETURN', 'CALCULATION_OR_IDENTIFIER', 'BRANCH',
+        'FOR_LOOP', 'WHILE_LOOP', 'ACCESS_SPECIFIERS',
+        'FUNCTION_DECL', 'CLASS'
     }
-    lang_rules = {
-        'C++': common | {'CPP', 'CPP_INCLUDE', 'CPP_PRINT'},
-        'Java': common | {'JAVA'},
-        'Python': common | {'PYTHON', 'PYTHON_DEF', 'PYTHON_CLASS'},
-    }
-    types = {tok.type for tok in tokens}
-    detected = []
-    for lang, allowed in lang_rules.items():
-        if types and types.issubset(allowed) and types & common:
-            detected.append(lang)
-    return detected
+    types = {t.type for t in tokens}
+    all_common = types.issubset(base_tokens)
+    has_class = 'CLASS' in types
+
+    cpp_set = base_tokens | {'CPP', 'CPP_INCLUDE', 'CPP_PRINT'}
+    py_set = base_tokens | {'PYTHON', 'PYTHON_DEF', 'PYTHON_CLASS'}
+    java_set = base_tokens | {'JAVA'}
+
+    if all_common and has_class:
+        return "C++ and Java"
+    if all_common:
+        return "C++, Java and Python"
+    if types.issubset(cpp_set):
+        return "C++"
+    if types.issubset(py_set):
+        return "Python"
+    if types.issubset(java_set):
+        return "Java"
+    return None
 
 def main():
-    st.set_page_config(
-        page_title="Programming Language Lexer",
-        page_icon="💻",
-        layout="centered"
-    )
+    st.set_page_config(page_title="Programming Language Lexer",
+                       page_icon="💻", layout="centered")
     st.title("Programming Language Lexer")
 
-    code_input = st.text_area(
-        "Paste your code here:",
-        value=default_code,
+    source_code = st.text_area(
+        "Enter code below:",
+        value=DEFAULT_SAMPLE,
         height=300
     )
 
     if st.button("Run Lexer"):
-        tokens = tokenize(code_input)
+        token_list = run_lexer_on(source_code)
         df = pd.DataFrame(
-            [(t.type, t.value) for t in tokens],
+            [(tok.type, tok.value) for tok in token_list],
             columns=["Token Type", "Token Value"]
         )
 
-        # Display the table
         st.dataframe(df, use_container_width=True)
+        st.markdown(make_download_link(df), unsafe_allow_html=True)
 
-        # Download link
-        link = make_csv_download(df)
-        st.markdown(link, unsafe_allow_html=True)
-
-        # Language detection
-        langs = detect_languages(tokens)
-        if langs:
-            st.success("Detected language(s): " + ", ".join(langs))
+        lang = detect_language(token_list)
+        if lang:
+            st.success(f"Detected language(s): {lang}")
         else:
             st.warning("Unable to detect the language.")
 
 if __name__ == "__main__":
-    default_code = '''
-    def abc():
-        a = b + c
-        return a
-    '''
+    DEFAULT_SAMPLE = """
+def abc():
+    a = b + c
+    return a
+"""
     main()
